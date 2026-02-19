@@ -46,14 +46,14 @@ jobs:
         run: |
           mkdir -p ~/.cache/bazel
           ccache --version
-          ccache --max-size=2G
+          ccache --max-size=20G
           ccache --set-config=compression=true
           echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
 
-      - name: 配置 Git
-        run: |
-          git config --global user.name "zzh20188"
-          git config --global user.email "BuildGkiKernel@gmail.com"
+#      - name: 配置 Git
+#        run: |
+#          git config --global user.name "zzh20188"
+#          git config --global user.email "BuildGkiKernel@gmail.com"
       
       - name: 安装仓库
         run: |
@@ -101,13 +101,13 @@ jobs:
           $REPO --version
           $REPO --trace sync -c -j$(nproc --all)
           rm -rf common
-          git clone https://github.com/ztc1997/android_gki_kernel_5.10_common.git --recurse-submodules --depth=1 common      
-          curl -LSs "https://github.com/zzh20188/ZTC-Kenel-Build/releases/download/clang/clang-r563880.tar.gz" -o clang-r563880.tar.gz
-          mkdir prebuilts-master/clang/host/linux-x86/clang-r563880
-          tar -xzvf clang-r563880.tar.gz -C prebuilts-master/clang/host/linux-x86/clang-r563880
-          # ln -s "$(pwd)/clang/clang-r563880" "$(pwd)/prebuilts-master/clang/host/linux-x86/clang-r563880"
+          git clone https://github.com/ztc1997/android_gki_kernel_5.10_common.git -b android12-5.10-2025-12 --recurse-submodules --depth=1 common      
+          curl -LSs "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-r584948.tar.gz" -o clang-r584948.tar.gz
+          mkdir prebuilts-master/clang/host/linux-x86/clang-r584948
+          tar -xzvf clang-r584948.tar.gz -C prebuilts-master/clang/host/linux-x86/clang-r584948
+          # ln -s "$(pwd)/clang/clang-r584948" "$(pwd)/prebuilts-master/clang/host/linux-x86/clang-r584948"
           cd common
-          sed -i 's|^CLANG_PREBUILT_BIN=.*|CLANG_PREBUILT_BIN=prebuilts-master/clang/host/linux-x86/clang-r563880/bin|' build.config.common
+          sed -i 's|^CLANG_PREBUILT_BIN=.*|CLANG_PREBUILT_BIN=prebuilts-master/clang/host/linux-x86/clang-r584948/bin|' build.config.common
           
 
       - name: 获取 KSU & SUSFS 版本
@@ -164,7 +164,7 @@ jobs:
             cd "$CONFIG"
 
             echo "Building the kernel..."
-            LTO=thin KCFLAGS="-O3" BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh CC=clang || exit 1
+            LTO=full KCFLAGS="-O3" BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh CC=clang || exit 1
             
 
       - name: 创建Bootimgs文件夹并复制镜像
