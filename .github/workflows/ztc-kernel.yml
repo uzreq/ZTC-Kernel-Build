@@ -164,7 +164,7 @@ jobs:
             cd "$CONFIG"
 
             echo "Building the kernel..."
-            LTO=full KCFLAGS="-O3" BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh CC=clang || exit 1
+            LTO=thin KCFLAGS="-O3" BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh CC=clang || exit 1
             
 
       - name: 创建Bootimgs文件夹并复制镜像
