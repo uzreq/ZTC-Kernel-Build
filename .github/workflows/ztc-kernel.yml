@@ -153,6 +153,8 @@ jobs:
           
       - name: 添加ipset等功能
         run: |
+            echo "更改为配置目录: $CONFIG..."
+            cd "$CONFIG"
             #kang from tools-cx-app/gki_build_action
             #启用  BPF 流解析器,实现高性能网络流量处理,增强网络监控和分析能力
             echo "CONFIG_BPF_STREAM_PARSER=y" >> ./common/arch/arm64/configs/gki_defconfig
