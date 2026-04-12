@@ -151,7 +151,7 @@ jobs:
           echo "5系:删除dirty字符串"
           sed -i 's/-dirty//' ./common/scripts/setlocalversion
           
-      - name: 添加ipset等功能
+      - name: 添加ipset,nft等功能
         run: |
             echo "更改为配置目录: $CONFIG..."
             cd "$CONFIG"
@@ -162,6 +162,13 @@ jobs:
             echo "CONFIG_NF_TABLES_IPV6=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NF_TABLES_ARP=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NF_FLOW_TABLE=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_NAT=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_FIB=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_FIB_INET=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_META=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_SET_HASH=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_SET_RBTREE=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_SET_BITMAP=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_SYNPROXY=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_TPROXY=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_OSF=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -181,8 +188,18 @@ jobs:
             echo "CONFIG_NFT_COUNTER=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_CT=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_NUMGEN=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NF_DUP_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_DUP_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_FWD_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NF_FLOW_TABLE_IPV4=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_FIB_IPV4=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_DUP_IPV4=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NF_FLOW_TABLE_IPV6=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_FIB_IPV6=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_DUP_IPV6=y" >> ./common/arch/arm64/configs/gki_defconfig     
             echo "CONFIG_NF_TABLES_INET=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NF_TABLES_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NF_FLOW_TABLE_INET=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_LOG=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NETFILTER_XT_SET=y" >> ./common/arch/arm64/configs/gki_defconfig
