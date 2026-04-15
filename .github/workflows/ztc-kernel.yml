@@ -209,6 +209,9 @@ jobs:
             echo "CONFIG_NF_FLOW_TABLE_IPV6=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_FIB_IPV6=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_DUP_IPV6=y" >> ./common/arch/arm64/configs/gki_defconfig     
+            echo "CONFIG_NFT_FIB_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_BRIDGE_META=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_NFT_BRIDGE_REJECT=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NF_TABLES_INET=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NF_TABLES_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NF_FLOW_TABLE_INET=y" >> ./common/arch/arm64/configs/gki_defconfig
