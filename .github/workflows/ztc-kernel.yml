@@ -165,10 +165,6 @@ jobs:
             echo "CONFIG_NFT_NAT=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_FIB=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_FIB_INET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_META=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_SET_HASH=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_SET_RBTREE=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_SET_BITMAP=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_SYNPROXY=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_TPROXY=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_OSF=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -187,11 +183,7 @@ jobs:
             echo "CONFIG_NFT_CONNLIMIT=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_COUNTER=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_CT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_BITWISE=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_BYTEORDER=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_PAYLOAD=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_FLOW_OFFLOAD=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_RT=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NF_TABLES_BRIDGE=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_NUMGEN=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NF_DUP_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
