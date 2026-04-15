@@ -192,12 +192,6 @@ jobs:
             echo "CONFIG_NFT_PAYLOAD=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_FLOW_OFFLOAD=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_RT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_SET_PIPAPO=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_CHAIN_FILTER=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_CHAIN_NAT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_CHAIN_ROUTE=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_IMPLICIT_CHAIN=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_BASE_CHAIN=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NF_TABLES_BRIDGE=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NFT_NUMGEN=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NF_DUP_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
