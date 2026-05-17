@@ -31,10 +31,10 @@ jobs:
         run: |
           # Set CONFIG dynamically based on inputs values
           DIR="android12-5.10-lts"
-          CONFIG="android12-5.10-lts/common/arch/arm64/configs/gki_defconfig"
+          CONFIG="$DIR/common/arch/arm64/configs/gki_defconfig"
           # Set CONFIG as an environment variable for future steps
           echo "DIR=$DIR" >> $GITHUB_ENV
-          echo "CONFIG=$CONFIG" >> $GIRHUB_ENV
+          echo "CONFIG=$CONFIG" >> $GITHUB_ENV
 
       # Install ccache
       - name: 安装 依赖
