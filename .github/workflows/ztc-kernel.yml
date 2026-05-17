@@ -31,7 +31,7 @@ jobs:
         run: |
           # Set CONFIG dynamically based on inputs values
           DIR="android12-5.10-lts"
-          CONFIG="$DIR/common/arch/arm64/configs/gki_defconfig"
+          CONFIG="android12-5.10-lts/common/arch/arm64/configs/gki_defconfig"
           # Set CONFIG as an environment variable for future steps
           echo "DIR=$DIR" >> $GITHUB_ENV
           echo "CONFIG=$CONFIG" >> $GIRHUB_ENV
