@@ -202,6 +202,9 @@ jobs:
           cp ./$DIR/out/android12-5.10/dist/Image ./
           cp ./$DIR/out/android12-5.10/dist/Image.lz4 ./
 
+          #..
+          cp -r ./$DIR/out/android12-5.10/dist ./dist
+          
           # Create gzip of the Image file
           gzip -n -k -f -9 ./Image > ./Image.gz
 
@@ -221,3 +224,9 @@ jobs:
         with:
           name: ZTC-Anykernel3
           path: ./AnyKernel3/*
+
+      - name: 上传编译资产
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: ./dist/*
