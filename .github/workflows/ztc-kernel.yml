@@ -69,8 +69,8 @@ jobs:
       - name: 初始化和同步内核源代码
         run: |
           echo "Creating folder for configuration: $CONFIG..."
-          mkdir -p "$CONFIG"
-          cd "$CONFIG"
+          mkdir -p "$DIR"
+          cd "$DIR"
           # Initialize and sync kernel source
           echo "Initializing and syncing kernel source..."
           FORMATTED_BRANCH="android12-5.10-lts"
@@ -103,7 +103,7 @@ jobs:
           
       - name: 添加ipset等功能
         run: |
-            echo "更改为配置目录: $CONFIG..."
+            echo "更改为配置目录: $DIR..."
             cd "$DIR"
             echo "CONFIG_BPF_STREAM_PARSER=y" >> $CONFIG
             echo "CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y" >> $CONFIG
