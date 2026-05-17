@@ -24,19 +24,17 @@ jobs:
           remove-codeql: 'true'          # Frees ~5.4 GB
           remove-docker-images: 'true'   # Frees ~3.2 GB
           remove-large-packages: 'true'  # Frees ~3.1 GB
-          remove-swapfile: 'true'        # Frees ~4 GB
           remove-cached-tools: 'false'   # Avoid unless confirmed safe
           verbose: 'true'                # Enable detailed logging
 
       - name: 设定 CONFIG 环境变量
         run: |
           # Set CONFIG dynamically based on inputs values
-          CONFIG="android12-5.10-lts"
-
+          DIR="android12-5.10-lts"
+          CONFIG="$DIR/common/arch/arm64/configs/gki_defconfig"
           # Set CONFIG as an environment variable for future steps
-          echo "CONFIG=$CONFIG" >> $GITHUB_ENV
-
-          echo "CONFIG set to: $CONFIG"
+          echo "DIR=$DIR" >> $GITHUB_ENV
+          echo "CONFIG=$CONFIG" >> $GIRHUB_ENV
 
       # Install ccache
       - name: 安装 依赖
@@ -49,11 +47,6 @@ jobs:
           ccache --max-size=20G
           ccache --set-config=compression=true
           echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
-
-#      - name: 配置 Git
-#        run: |
-#          git config --global user.name "zzh20188"
-#          git config --global user.email "BuildGkiKernel@gmail.com"
       
       - name: 安装仓库
         run: |
@@ -70,21 +63,8 @@ jobs:
           ANYKERNEL_BRANCH="gki-2.0"
           SUSFS_BRANCH="gki-android12-5.10"
 
-          # Debug print the branches
-          echo "Using branch for SUSFS: $SUSFS_BRANCH"
-
           # Clone repositories using the branch names
           git clone https://github.com/WildPlusKernel/AnyKernel3.git -b "$ANYKERNEL_BRANCH"
-          
-      - name: 设置 CONFIG 环境变量
-        run: |
-          # Set CONFIG dynamically based on inputs values
-          CONFIG="android12-5.10-lts"
-
-          # Set CONFIG as an environment variable for future steps
-          echo "CONFIG=$CONFIG" >> $GITHUB_ENV
-
-          echo "CONFIG set to: $CONFIG"
 
       - name: 初始化和同步内核源代码
         run: |
@@ -109,126 +89,90 @@ jobs:
           cd common
           sed -i 's|^CLANG_PREBUILT_BIN=.*|CLANG_PREBUILT_BIN=prebuilts-master/clang/host/linux-x86/clang-r584948/bin|' build.config.common
           
-
-      - name: 获取 KSU & SUSFS 版本
-        run: |
-          echo "This is the KSU variant"
-          git clone https://github.com/tiann/KernelSU.git KernelSU
-          VAR=200
-          cd KernelSU
-
-          # 计算KSU版本号
-          KSU_GIT_VERSION=$(git rev-list --count HEAD)
-          KSU_VERSION=$((10000 + KSU_GIT_VERSION + VAR))
-          echo $KSU_VERSION
-          echo "KSU_VERSION=$KSU_VERSION" >> $GITHUB_ENV
-
-          # 计算SUSFS版本号
-          INFO="https://gitlab.com/simonpunk/susfs4ksu/-/raw/gki-android14-6.1/ksu_module_susfs/module.prop\?ref_type\=heads"
-          SUS_VERSION=$(curl -s $INFO | awk -F '=' '$1 == "version" { print $2 }')
-          echo $SUS_VERSION
-
-          # 导出这两个值给release
-          echo "kversion=$KSU_VERSION" >> $GITHUB_OUTPUT
-          echo "sversion=$SUS_VERSION" >> $GITHUB_OUTPUT
-
-          
-      - name: 查看SUSFS配置设置
-        run: |
-          echo "更改为配置目录: $CONFIG..."
-          cd "$CONFIG"
-          # Remove check_defconfig
-          sed -i 's/check_defconfig//' ./common/build.config.gki
-
-          # 用于debug config
-          tail -n 60 ./common/arch/arm64/configs/gki_defconfig
-
       - name: 配置内核构时间/删除dirty字符
         run: |
-          echo "更改为配置目录: $CONFIG..."
-          cd "$CONFIG"
-
+          cd "$DIR"
           echo "5系:删除dirty字符串"
           sed -i 's/-dirty//' ./common/scripts/setlocalversion
           
-      - name: 添加ipset,nft等功能
+      - name: 添加ipset等功能
         run: |
             echo "更改为配置目录: $CONFIG..."
-            cd "$CONFIG"
-            #kang from tools-cx-app/gki_build_action
-            echo "CONFIG_BPF_STREAM_PARSER=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NF_TABLES=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NF_TABLES_IPV4=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NF_TABLES_IPV6=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NF_TABLES_ARP=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NF_FLOW_TABLE=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_NAT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_FIB=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_FIB_INET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_SYNPROXY=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_TPROXY=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_OSF=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_SOCKET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_XFRM=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_HASH=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_COMPAT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_REJECT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_QUOTA=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_QUEUE=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_OBJREF=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_TUNNEL=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_REDIR=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_MASQ=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_LIMIT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_CONNLIMIT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_COUNTER=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_CT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_FLOW_OFFLOAD=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NF_TABLES_BRIDGE=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_NUMGEN=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NF_DUP_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_DUP_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_FWD_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NF_FLOW_TABLE_IPV4=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_FIB_IPV4=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_DUP_IPV4=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NF_FLOW_TABLE_IPV6=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_FIB_IPV6=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_DUP_IPV6=y" >> ./common/arch/arm64/configs/gki_defconfig     
-            echo "CONFIG_NFT_FIB_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_BRIDGE_META=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_BRIDGE_REJECT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NF_TABLES_INET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NF_TABLES_NETDEV=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NF_FLOW_TABLE_INET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NFT_LOG=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NETFILTER_XT_SET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_MAX=65534" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_BITMAP_IP=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_BITMAP_IPMAC=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_BITMAP_PORT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_HASH_IP=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_HASH_IPMARK=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_HASH_IPPORT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_HASH_IPPORTIP=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_HASH_IPPORTNET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_HASH_IPMAC=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_HASH_MAC=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_HASH_NETPORTNET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_HASH_NET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_HASH_NETNET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_HASH_NETPORT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP_SET_LIST_SET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP6_NF_NAT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP6_NF_TARGET_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_IP6_NF_TARGET_MASQUERADE=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_CGROUP_NET_CLASSID=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NETFILTER_XT_MATCH_CGROUP=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NET_CLS_CGROUP=y" >“ ./common/arch/arm64/configs/gki_defconfig
-            
+            cd "$DIR"
+            echo "CONFIG_BPF_STREAM_PARSER=y" >> $CONFIG
+            echo "CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y" >> $CONFIG
+            echo "CONFIG_NETFILTER_XT_SET=y" >> $CONFIG
+            echo "CONFIG_IP_SET=y" >> $CONFIG
+            echo "CONFIG_IP_SET_MAX=65534" >> $CONFIG
+            echo "CONFIG_IP_SET_BITMAP_IP=y" >> $CONFIG
+            echo "CONFIG_IP_SET_BITMAP_IPMAC=y" >> $CONFIG
+            echo "CONFIG_IP_SET_BITMAP_PORT=y" >> $CONFIG
+            echo "CONFIG_IP_SET_HASH_IP=y" >> $CONFIG
+            echo "CONFIG_IP_SET_HASH_IPMARK=y" >> $CONFIG
+            echo "CONFIG_IP_SET_HASH_IPPORT=y" >> $CONFIG
+            echo "CONFIG_IP_SET_HASH_IPPORTIP=y" >> $CONFIG
+            echo "CONFIG_IP_SET_HASH_IPPORTNET=y" >> $CONFIG
+            echo "CONFIG_IP_SET_HASH_IPMAC=y" >> $CONFIG
+            echo "CONFIG_IP_SET_HASH_MAC=y" >> $CONFIG
+            echo "CONFIG_IP_SET_HASH_NETPORTNET=y" >> $CONFIG
+            echo "CONFIG_IP_SET_HASH_NET=y" >> $CONFIG
+            echo "CONFIG_IP_SET_HASH_NETNET=y" >> $CONFIG
+            echo "CONFIG_IP_SET_HASH_NETPORT=y" >> $CONFIG
+            echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> $CONFIG
+            echo "CONFIG_IP_SET_LIST_SET=y" >> $CONFIG
+            echo "CONFIG_CGROUP_NET_CLASSID=y" >> $CONFIG
+            echo "CONFIG_NETFILTER_XT_MATCH_CGROUP=y" >> $CONFIG
+            echo "CONFIG_NET_CLS_CGROUP=y" >“ $CONFIG
+            #nftables, maybe breaks kmi
+            #echo "CONFIG_NF_TABLES=y" >> $CONFIG
+            #echo "CONFIG_NF_TABLES_IPV4=y" >> $CONFIG
+            #echo "CONFIG_NF_TABLES_IPV6=y" >> $CONFIG
+            #echo "CONFIG_NF_TABLES_ARP=y" >> $CONFIG
+            #echo "CONFIG_NF_FLOW_TABLE=y" >> $CONFIG
+            #echo "CONFIG_NFT_NAT=y" >> $CONFIG
+            #echo "CONFIG_NFT_FIB=y" >> $CONFIG
+            #echo "CONFIG_NFT_FIB_INET=y" >> $CONFIG
+            #echo "CONFIG_NFT_SYNPROXY=y" >> $CONFIG
+            #echo "CONFIG_NFT_TPROXY=y" >> $CONFIG
+            #echo "CONFIG_NFT_OSF=y" >> $CONFIG
+            #echo "CONFIG_NFT_SOCKET=y" >> $CONFIG
+            #echo "CONFIG_NFT_XFRM=y" >> $CONFIG
+            #echo "CONFIG_NFT_HASH=y" >> $CONFIG
+            #echo "CONFIG_NFT_COMPAT=y" >> $CONFIG
+            #echo "CONFIG_NFT_REJECT=y" >> $CONFIG
+            #echo "CONFIG_NFT_QUOTA=y" >> $CONFIG
+            #echo "CONFIG_NFT_QUEUE=y" >> $CONFIG
+            #echo "CONFIG_NFT_OBJREF=y" >> $CONFIG
+            #echo "CONFIG_NFT_TUNNEL=y" >> $CONFIG
+            #echo "CONFIG_NFT_REDIR=y" >> $CONFIG
+            #echo "CONFIG_NFT_MASQ=y" >> $CONFIG
+            #echo "CONFIG_NFT_LIMIT=y" >> $CONFIG
+            #echo "CONFIG_NFT_CONNLIMIT=y" >> $CONFIG
+            #echo "CONFIG_NFT_COUNTER=y" >> $CONFIG
+            #echo "CONFIG_NFT_CT=y" >> $CONFIG
+            #echo "CONFIG_NFT_FLOW_OFFLOAD=y" >> $CONFIG
+            #echo "CONFIG_NF_TABLES_BRIDGE=y" >> $CONFIG
+            #echo "CONFIG_NFT_NUMGEN=y" >> $CONFIG
+            #echo "CONFIG_NF_DUP_NETDEV=y" >> $CONFIG
+            #echo "CONFIG_NFT_DUP_NETDEV=y" >> $CONFIG
+            #echo "CONFIG_NFT_FWD_NETDEV=y" >> $CONFIG
+            #echo "CONFIG_NF_FLOW_TABLE_IPV4=y" >> $CONFIG
+            #echo "CONFIG_NFT_FIB_IPV4=y" >> $CONFIG
+            #echo "CONFIG_NFT_DUP_IPV4=y" >> $CONFIG
+            #echo "CONFIG_NF_FLOW_TABLE_IPV6=y" >> $CONFIG
+            #echo "CONFIG_NFT_FIB_IPV6=y" >> $CONFIG
+            #echo "CONFIG_NFT_DUP_IPV6=y" >> $CONFIG     
+            #echo "CONFIG_NFT_FIB_NETDEV=y" >> $CONFIG
+            #echo "CONFIG_NFT_BRIDGE_META=y" >> $CONFIG
+            #echo "CONFIG_NFT_BRIDGE_REJECT=y" >> $CONFIG
+            #echo "CONFIG_NF_TABLES_INET=y" >> $CONFIG
+            #echo "CONFIG_NF_TABLES_NETDEV=y" >> $CONFIG
+            #echo "CONFIG_NF_FLOW_TABLE_INET=y" >> $CONFIG
+            #echo "CONFIG_NFT_LOG=y" >> $CONFIG
+            #echo "CONFIG_IP6_NF_NAT=y" >> $CONFIG
+            #echo "CONFIG_IP6_NF_TARGET_REDIRECT=y" >> $CONFIG
+            #echo "CONFIG_IP6_NF_TARGET_MASQUERADE=y" >> $CONFIG
+                        
       - name: Build with retry
         uses: nick-fields/retry@v3
         with:
@@ -238,7 +182,7 @@ jobs:
           command: |
             set -e
             set -x
-            cd "$CONFIG"
+            cd "$DIR"
 
             echo "Building the kernel..."
             LTO=thin KCFLAGS="-O3" BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh CC=clang || exit 1
@@ -246,7 +190,6 @@ jobs:
 
       - name: 创建Bootimgs文件夹并复制镜像
         run: |
-          echo "更改为配置目录: $CONFIG..."
           mkdir bootimgs
 
           echo "Creating bootimgs folder and copying images..."
@@ -269,109 +212,8 @@ jobs:
           echo "Creating zip file: $ZIP_NAME..."
           mv ../Image ./Image
 
-      - name: 添加 KernelSU
-        id: add_KSU
-        continue-on-error: true
-        run: |
-          REPO="tiann/KernelSU"
-
-          FILENAME="build-manager.yml"
-          KSUM="manager"
-          
-          # 初始化
-          NUMBER=0
-          DOWNLOAD_URL=""
-
-          echo "开始查找包含 'manager' 产物的构建..."
-          while true; do
-            echo "--------------------------------------------------"
-            echo "正在检查第 ${NUMBER} 个历史构建 (0代表最新)..."
-
-            if [ "$NUMBER" -ge 9 ]; then
-              echo "查找九次仍然失败，跳出循环。"
-              break
-            fi
-
-            # 1. 获取指定顺序的成功构建的ID
-
-            BUILD_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/$REPO/actions/workflows/$FILENAME/runs?status=success" |
-              jq -r '.workflow_runs['"$NUMBER"'].id')
-
-            echo "找到构建 ID: $BUILD_ID"
-
-            ARTIFACTS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/$REPO/actions/runs/$BUILD_ID/artifacts")
-
-            result=$(echo "$ARTIFACTS" | jq -r '.artifacts[] | select(.name | contains("'"$KSUM"'")) | .name')
-
-            if [ -z "$result" ]; then
-              echo "没有找到包含 '$KSUM' 的项"
-              NUMBER=$((NUMBER + 1))
-            else
-              echo "$result"
-              DOWNLOAD_URL=$(echo "$ARTIFACTS" | jq -r '.artifacts[] | select(.name == "'"$KSUM"'") | .archive_download_url')
-              break
-            fi
-
-          done
-          
-          # 下载 Manager 文件
-          curl -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -o "KSU-管理器(${{ env.KSU_VERSION }}).zip" "$DOWNLOAD_URL"
-          echo "Manager 文件已下载为：KSU-管理器(${{ env.KSU_VERSION }}).zip"
-          unzip *.zip
-          rm -rf *.zip
-  
-      - name: 添加 SUSFS 模块
-        id: add_SUSFS
-        continue-on-error: true
-        run: |
-          BUILD_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/sidex15/susfs4ksu-module/actions/workflows/build.yml/runs?status=success" |
-          jq -r '.workflow_runs[0].id')
-
-          ARTIFACTS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/sidex15/susfs4ksu-module/actions/runs/$BUILD_ID/artifacts")
-
-          DOWNLOAD_URL=$(echo "$ARTIFACTS" | jq -r '.artifacts[0].archive_download_url') 
-
-          NAME=$(echo "$ARTIFACTS" | jq -r '.artifacts[0].name')
-          echo "SUSFS_NAME=$NAME" >> $GITHUB_ENV
-          NAME="susfs-$NAME.zip"
-          
-          echo $DOWNLOAD_URL
-          echo $NAME
-          # 下载 Manager 文件
-          curl -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -o "$NAME" "$DOWNLOAD_URL"
-          echo "$NAME 文件已下载.zip"         
-          
-          echo "正在检查调用者: ${{ github.caller_workflow }}"
-
-          # 由用户调用或是由作者上传到release?
-
-          if [ "${{ github.workflow }}" == "测试发布" ]; then
-            echo "这是测试发布工作流"
-            mkdir -p susfs-module && mv $NAME susfs-module
-          else
-            echo "这是其他工作流"
-            mkdir -p susfs-module && unzip *.zip -d susfs-module
-          fi
-      
       - name: 上传编译资产 (仅 AK3)
         uses: actions/upload-artifact@v4
         with:
           name: ZTC-Anykernel3
           path: ./AnyKernel3/*
-
-      - name: 上传APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: KSU-Manager(${{ env.KSU_VERSION }})
-          path: |
-            *.apk
-  
-      - name: 上传SUSFS模块
-        uses: actions/upload-artifact@v4
-        with:
-          name: susfs-${{ env.SUSFS_NAME }}
-          path: ./susfs-module/*
