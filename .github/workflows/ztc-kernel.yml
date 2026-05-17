@@ -92,6 +92,12 @@ jobs:
       - name: 配置内核构时间/删除dirty字符
         run: |
           cd "$DIR"
+          # Remove check_defconfig
+          sed -i 's/check_defconfig//' ./common/build.config.gki
+
+          # 用于debug config
+          tail -n 60 ./common/arch/arm64/configs/gki_defconfig
+
           echo "5系:删除dirty字符串"
           sed -i 's/-dirty//' ./common/scripts/setlocalversion
           
